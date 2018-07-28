@@ -1,93 +1,78 @@
 import React, { Component } from 'react';
-import CorgiCard from './components/CorgiCard.js';
-import Wrapper from './components/Wrapper.js';
-import NavBar from './components/NavBar.js';
-import Footer from './components/Footer.js';
+import NavBar from './components/NavBar/NavBar';
+import Wrapper from "./components/Wrapper/Wrapper";
+import Footer from './components/Footer/Footer'
+import CorgiCard from './components/CorgiCard/CorgiCard'
 import corgis from './corgis.json';
-// import './App.css';
+import './App.css';
 
 class App extends Component {
+  // Set default state
   state = {
-    corgi: corgis,
+    corgis,
     score: 0,
+    totalScore: 0,
     topScore: 0,
     pickedCorgi: [],
-    gameMessage: 'Click on an adorable corgi to begin!'
+    gameMessage: 'Click on an adorable corgi to begin, but click the same one more than once and your score will reset!'
   };
 
-  removeCorgi = id => {
-    const corgis = this.state.corgis.filter(corgi => corgi.id !== id);
-    this.setState({ corgis });
-  };
+  handleImageChange = id => {
+    this.setState({ gameMessage: 'Nice job! Select the next image!' });
+    let pickedCorgi = this.state.pickedCorgi;
+    // If never selected, push to picked array
+    if (!pickedCorgi.includes(id)) {
+      pickedCorgi.push(id)
+      // If user picked all 12, set score to 12
+      if (pickedCorgi.length === 12) {
+        this.setState({ score: 12, totalScore: 12, topScore: 12, pickedCorgi: [] , gameMessage: 'Congrats, you win!'});
+        return;
+      }
+      // If never selected before, increment score
+      if (this.state.score >= this.state.totalScore) {
+        this.state.topScore = this.state.score + 1;
+      }
+      this.setState({ corgis, pickedCorgi, score: pickedCorgi.length, totalScore: this.state.topScore });
+      // Shuffle images
+      for (let i = corgis.length - 1; i > 0; i--) {
+        let j = Math.floor((Math.random() * (i)) + 0);
+        [corgis[j], corgis[i]] = [corgis[i], corgis[j]];
+      }
 
-  imageClick = (id) => {
-    this.setState({ gameMessage: 'Select the next image!' });
-    // If corg never been selected, +1 to score
-    if (this.state.pickedCorgi.indexOf(id) === -1) {
-      let newScore = (this.state.score + 1) % 12;
-      this.state.pickedCorgi.push(id);
-      // If user has top score, push score to top score field in nav
-      if (this.state.score >= this.state.topScore && this.state.topScore !== 12) {
-        this.setState({ score: newScore }, { topScore: newScore });
-      } else if (this.state.score >= this.state.topScore && this.state.topScore === 12) {
-        this.setScore({ score: newScore });
-      } else {
-        this.setState({ score: newScore })
-      };
-      this.shuffleDog();
-      // If selected before, user loses
     } else {
-      this.setState({ gameMessage: 'Too bad, you lose! Try again.' })
-      this.setState({ score: 0 }, { pickedCorgi: [] })
-    }
-    // If corg picked has never been selected AND the score is 11, user wins
-    if (this.state.pickedCorgi.indexOf(id) === -1 && this.state.pickedCorgi.length === 11) {
-      this.setState({ score: 12, topScore: 12, gameMessage: 'Congrats, you win!', pickedCorgi: [] });
+      // If image has been previously selected, set following state
+      this.setState({ gameMessage: 'Too bad, you already selected that one! Try again.' })
+      if (this.state.score < this.state.totalScore) {
+        this.state.topScore = this.state.totalScore;
+      }
+      this.setState({ pickedCorgi: [], score: 0, totalScore: this.state.topScore });
       return;
     }
-  };
-
-  // Logic to shuffle all the corgi cards
-  shuffleCards = (arr) => {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    console.log (arr);
-};
-
-  shuffleDog = () => {
-    let shuffledDog = this.shuffleCards(corgis);
-    this.setState({ corgi: shuffledDog })
-  };
+  }
 
   render() {
     return (
-      <div>
-        <NavBar
-          score={this.state.score}
-          topScore={this.state.topScore}
-          gameMessage={this.state.gameMessage}
+      <div className="App">
+        <NavBar 
+        score = {this.state.score}
+        topScore = {this.state.topScore}
+        gameMessage = {this.state.gameMessage}
         />
+
         <Wrapper>
-          {this.state.corgi.map(dog => {
-            return (
-              <CorgiCard
-                key={dog.id}
-                id={dog.id}
-                image={dog.image}
-                imageClick={this.imageClick}
-                name={dog.name}
-              />
-            )
-          })}
+          {this.state.corgis.map(img => (
+            <CorgiCard
+              id={img.id}
+              url={img.url}
+              name={img.name}
+              handleImageChange={this.handleImageChange}
+            />
+          ))}
         </Wrapper>
         <Footer />
       </div>
-    )
+    );
   }
-
 }
-
 
 export default App;
