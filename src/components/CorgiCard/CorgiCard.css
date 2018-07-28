@@ -5,4 +5,8 @@
     padding: 0px;
     position: relative;
   }
+
+  .image:hover {
+    cursor: pointer;
+  }
    

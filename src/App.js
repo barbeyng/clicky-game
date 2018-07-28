@@ -4,7 +4,6 @@ import Wrapper from "./components/Wrapper/Wrapper";
 import Footer from './components/Footer/Footer'
 import CorgiCard from './components/CorgiCard/CorgiCard'
 import corgis from './corgis.json';
-import './App.css';
 
 class App extends Component {
   // Set default state
